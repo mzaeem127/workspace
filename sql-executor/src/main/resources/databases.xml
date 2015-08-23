@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<databases>
+	<database>
+		<type>oracle</type>
+		<id>dev_oracle</id>
+		<description>Oracle Development Instance</description>
+		<jdbcUrl></jdbcUrl>
+		<password>trigger</password>
+		<username>scott</username>
+		<driverClass></driverClass>
+	</database>
+	<database>
+		<type>mssql</type>
+		<id>dev_mssql_2014</id>
+		<description>SQL Server 2014 Development Instance</description>
+		<jdbcUrl></jdbcUrl>
+		<password>trigger</password>
+		<username>scott</username>
+		<driverClass></driverClass>
+	</database>
+	<database>
+		<type>mssql</type>
+		<id>dev_mssql_2012</id>
+		<description>SQL Server 2012 Development Instance</description>
+		<jdbcUrl></jdbcUrl>
+		<password>trigger</password>
+		<username>scott</username>
+		<driverClass></driverClass>
+	</database>
+</databases>
+

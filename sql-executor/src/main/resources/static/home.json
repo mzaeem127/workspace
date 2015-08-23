@@ -1,0 +1,23 @@
+{	
+	"types" : [
+		{
+			"id": "mssql",
+			"value": "SQL Server"
+		},
+		{
+			"id": "oracle",
+			"value": "Oracle Server"
+		}
+	],
+	"databases": [
+		{
+			"id": "play_pcl",
+			"value": "DEV_QA" 
+		},
+		{
+			"id": "play_JEMS",
+			"value": "JEMS" 
+		}
+	],
+	"sql": "test"
+}
