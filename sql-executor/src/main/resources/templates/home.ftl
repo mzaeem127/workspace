@@ -1,38 +1,5 @@
-<html lang='en-US'>
-<head>
-<meta charset='utf-8'>
-<title>Database Upgrade</title>
-<link rel="stylesheet"
-	href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-<script src=//code.jquery.com/jquery-2.1.4.js></script>
-<script
-	src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-<script src='//cdn.ractivejs.org/latest/ractive.min.js'></script>
-<script src='//cdn.jsdelivr.net/ractive.load/latest/ractive-load.min.js'></script>
-<link rel="stylesheet" href="app.css">
-</head>
-
-<body>
-
-	<div class="navbar navbar-inverse navbar-fixed-top">
-		<div class="container">
-			<div class="navbar-header">
-				<button type="button" class="navbar-toggle" data-toggle="collapse"
-					data-target=".navbar-collapse">
-					<span class="icon-bar"></span> <span class="icon-bar"></span> <span
-						class="icon-bar"></span>
-				</button>
-				<a class="navbar-brand" href="#">Web SQL Executor <small>Executes
-						SQLs against multiple databases</small></a>
-			</div>
-			<div class="collapse navbar-collapse">
-				<ul class="nav navbar-nav">
-					<li class="active"><a href="home.html">Home</a></li>
-					<li><a href="viewlog.html">View Logs</a></li>
-				</ul>
-			</div>
-		</div>
-	</div>
+<#assign tabname = "home">
+<#include "header.ftl">
 	<div class="container">
 		<div id='container'></div>
 	</div>
@@ -85,8 +52,10 @@
 					<button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
 				</div>
 			</div>
+			<!-- /.modal-content -->
 		</div>
+		<!-- /.modal-dialog -->
 	</div>
+	<!-- /.modal -->
 	<script src="home.js"></script>
-</body>
-</html>
+<#include "footer.ftl">

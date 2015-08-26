@@ -9,15 +9,17 @@ var ractive = new Ractive({
 	// Here, we're passing in some initial data
 	data : {
 		"types" : [ {
-			"id" : "mssql",
-			"value" : "SQL Server"
+			"id" : "mysql",
+			"value" : "MySQL Server"
 		}, {
 			"id" : "oracle",
-			"value" : "Oracle"
+			"value" : "Oracle Server"
+		}, {
+			"id" : "mssql",
+			"value" : "SQL Server"
 		} ]
 	}
 });
-
 ractive.on({
 	execute : function(event) {
 		var databases = [];
@@ -27,6 +29,18 @@ ractive.on({
 				databases.push(database.id);
 			}
 		});
+		if (databases.length == 0) {
+			// alert("You must select at least one database");
+			showModal('Error', 'You must select at least one database');
+			return;
+		}
+		if (ractive.get("sql").length == 0) {
+			// alert("Please enter at least one SQL statement to be exected");
+			showModal('Error',
+					'Please enter at least one SQL statement to be exected');
+			return;
+		}
+
 		var data = {
 			"sql" : ractive.get("sql"),
 			"databases" : databases
@@ -40,7 +54,8 @@ ractive.on({
 			contentType : "application/json; charset=utf-8",
 			success : function(res) {
 				console.log(res);
-				alert("it works!");
+				window.location.href = "viewlog.vml?id=" + res.executionId;
+				// alert("it works!");
 			},
 			error : function(res) {
 				console.log(res);
@@ -69,4 +84,10 @@ function reloadDatabases(selectedType) {
 			alert("Bad thing happend! " + res.statusText);
 		}
 	});
+}
+
+function showModal(title, message) {
+	$('.modal-title').html(title);
+	$('.modal-body').html('<p>' + message + '</p>');
+	$('#myModal').modal('show');
 }

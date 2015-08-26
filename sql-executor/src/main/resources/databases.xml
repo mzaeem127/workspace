@@ -5,27 +5,36 @@
 		<id>dev_oracle</id>
 		<description>Oracle Development Instance</description>
 		<jdbcUrl></jdbcUrl>
-		<password>trigger</password>
 		<username>scott</username>
+		<password>trigger</password>
 		<driverClass></driverClass>
 	</database>
 	<database>
 		<type>mssql</type>
-		<id>dev_mssql_2014</id>
-		<description>SQL Server 2014 Development Instance</description>
-		<jdbcUrl></jdbcUrl>
-		<password>trigger</password>
-		<username>scott</username>
-		<driverClass></driverClass>
+		<id>DEV_TMP_7000</id>
+		<description>SQL Server 2014 (DEV_TMP_7000)</description>
+		<jdbcUrl>jdbc:jtds:sqlserver://10.211.55.4:1433/DEV_TMP_7000</jdbcUrl>
+		<username>sa</username>
+		<password>csdc2135</password>
+		<driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
 	</database>
 	<database>
 		<type>mssql</type>
-		<id>dev_mssql_2012</id>
-		<description>SQL Server 2012 Development Instance</description>
-		<jdbcUrl></jdbcUrl>
-		<password>trigger</password>
-		<username>scott</username>
-		<driverClass></driverClass>
+		<id>AMANDA7</id>
+		<description>SQL Server 2014 (AMANDA7)</description>
+		<jdbcUrl>jdbc:jtds:sqlserver://10.211.55.4:1433/AMANDA7</jdbcUrl>
+		<username>sa</username>
+		<password>csdc2135</password>
+		<driverClass>net.sourceforge.jtds.jdbc.Driver</driverClass>
+	</database>
+	<database>
+		<type>mysql</type>
+		<id>dibase2</id>
+		<description>Local dibase2 database</description>
+		<jdbcUrl>jdbc:mysql://db1/dibase2?useUnicode=true&amp;characterEncoding=UTF-8</jdbcUrl>
+		<username>diusr</username>
+		<password>dipwd</password>
+		<driverClass>com.mysql.jdbc.Driver</driverClass>
 	</database>
 </databases>
 

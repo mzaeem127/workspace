@@ -2,31 +2,37 @@ package org.sabby.sql.executor.service;
 
 import java.io.IOException;
 import java.io.LineNumberReader;
-import java.io.PrintWriter;
 import java.io.Reader;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.sabby.sql.executor.domain.ScriptExecutionItemRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Tool to run database scripts
  */
 public class ScriptRunner {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(ScriptRunner.class);
+
 	private static final String DEFAULT_DELIMITER = ";";
 
 	private Connection connection;
 
 	private boolean stopOnError;
+
 	private boolean autoCommit;
 
-	private PrintWriter logWriter = new PrintWriter(System.out);
-	private PrintWriter errorLogWriter = new PrintWriter(System.err);
-
 	private String delimiter = DEFAULT_DELIMITER;
+
 	private boolean fullLineDelimiter = false;
+
+	private List<ScriptExecutionItemRecord> results;
 
 	/**
 	 * Default constructor
@@ -35,6 +41,7 @@ public class ScriptRunner {
 		this.connection = connection;
 		this.autoCommit = autoCommit;
 		this.stopOnError = stopOnError;
+		results = new ArrayList<>();
 	}
 
 	public void setDelimiter(String delimiter, boolean fullLineDelimiter) {
@@ -43,32 +50,12 @@ public class ScriptRunner {
 	}
 
 	/**
-	 * Setter for logWriter property
-	 *
-	 * @param logWriter
-	 *            - the new value of the logWriter property
-	 */
-	public void setLogWriter(PrintWriter logWriter) {
-		this.logWriter = logWriter;
-	}
-
-	/**
-	 * Setter for errorLogWriter property
-	 *
-	 * @param errorLogWriter
-	 *            - the new value of the errorLogWriter property
-	 */
-	public void setErrorLogWriter(PrintWriter errorLogWriter) {
-		this.errorLogWriter = errorLogWriter;
-	}
-
-	/**
 	 * Runs an SQL script (read in using the Reader parameter)
 	 *
 	 * @param reader
 	 *            - the source of the script
 	 */
-	public void runScript(Reader reader) throws IOException, SQLException {
+	public List<ScriptExecutionItemRecord> runScript(Reader reader) throws IOException, SQLException {
 		try {
 			boolean originalAutoCommit = connection.getAutoCommit();
 			try {
@@ -86,6 +73,7 @@ public class ScriptRunner {
 		} catch (Exception e) {
 			throw new RuntimeException("Error running script.  Cause: " + e, e);
 		}
+		return results;
 	}
 
 	/**
@@ -112,7 +100,7 @@ public class ScriptRunner {
 				}
 				String trimmedLine = line.trim();
 				if (trimmedLine.startsWith("--")) {
-					println(trimmedLine);
+					LOGGER.debug(trimmedLine);
 				} else if (trimmedLine.length() < 1 || trimmedLine.startsWith("//")) {
 					// Do nothing
 				} else if (trimmedLine.length() < 1 || trimmedLine.startsWith("--")) {
@@ -126,41 +114,22 @@ public class ScriptRunner {
 					command.append(" ");
 					Statement statement = conn.createStatement();
 
-					println(command);
+					ScriptExecutionItemRecord result = new ScriptExecutionItemRecord();
+					result.setSqlCommand(command.toString());
 
-					boolean hasResults = false;
 					if (stopOnError) {
-						hasResults = statement.execute(command.toString());
+						statement.execute(command.toString());
 					} else {
 						try {
 							statement.execute(command.toString());
+							result.setSuccess(true);
 						} catch (SQLException e) {
-							e.fillInStackTrace();
-							printlnError("Error executing: " + command);
-							printlnError(e);
+							result.setErrorMessage(e.getMessage());
 						}
 					}
-
+					results.add(result);
 					if (autoCommit && !conn.getAutoCommit()) {
 						conn.commit();
-					}
-
-					ResultSet rs = statement.getResultSet();
-					if (hasResults && rs != null) {
-						ResultSetMetaData md = rs.getMetaData();
-						int cols = md.getColumnCount();
-						for (int i = 0; i < cols; i++) {
-							String name = md.getColumnLabel(i);
-							print(name + "\t");
-						}
-						println("");
-						while (rs.next()) {
-							for (int i = 0; i < cols; i++) {
-								String value = rs.getString(i);
-								print(value + "\t");
-							}
-							println("");
-						}
 					}
 
 					command = null;
@@ -178,50 +147,18 @@ public class ScriptRunner {
 			if (!autoCommit) {
 				conn.commit();
 			}
-		} catch (SQLException e) {
-			e.fillInStackTrace();
-			printlnError("Error executing: " + command);
-			printlnError(e);
-			throw e;
-		} catch (IOException e) {
-			e.fillInStackTrace();
-			printlnError("Error executing: " + command);
-			printlnError(e);
+		} catch (SQLException | IOException e) {
+			ScriptExecutionItemRecord result = new ScriptExecutionItemRecord();
+			result.setSqlCommand(command.toString());
+			result.setErrorMessage(e.getMessage());
+			LOGGER.error("Error executibe command", e);
 			throw e;
 		} finally {
 			conn.rollback();
-			flush();
 		}
 	}
 
 	private String getDelimiter() {
 		return delimiter;
-	}
-
-	private void print(Object o) {
-		if (logWriter != null) {
-			System.out.print(o);
-		}
-	}
-
-	private void println(Object o) {
-		if (logWriter != null) {
-			logWriter.println(o);
-		}
-	}
-
-	private void printlnError(Object o) {
-		if (errorLogWriter != null) {
-			errorLogWriter.println(o);
-		}
-	}
-
-	private void flush() {
-		if (logWriter != null) {
-			logWriter.flush();
-		}
-		if (errorLogWriter != null) {
-			errorLogWriter.flush();
-		}
 	}
 }

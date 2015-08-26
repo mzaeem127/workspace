@@ -2,18 +2,18 @@ package org.sabby.sql.executor;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.velocity.app.VelocityEngine;
 import org.sabby.sql.executor.config.Database;
+import org.sabby.sql.executor.domain.ScriptExecutionItemRecord;
+import org.sabby.sql.executor.domain.ScriptExecutionRecord;
+import org.sabby.sql.executor.domain.ScriptExecutionRepository;
 import org.sabby.sql.executor.model.DatabaseResponse;
 import org.sabby.sql.executor.model.ExecuteSqlRequest;
 import org.sabby.sql.executor.model.ExecuteSqlResponse;
 import org.sabby.sql.executor.service.SqlExecuteService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ui.velocity.VelocityEngineUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class IndexController {
+public class RestJsonController {
 
 	@Autowired
 	VelocityEngine engine;
@@ -29,13 +29,8 @@ public class IndexController {
 	@Autowired
 	SqlExecuteService sqlExecuteService;
 
-	@RequestMapping("/")
-	public String index() {
-		Map<String, Object> model = new HashMap<String, Object>();
-		model.put("message", "Welcome");
-		model.put("time", new Date().toString());
-		return VelocityEngineUtils.mergeTemplateIntoString(this.engine, "index.vm", "UTF-8", model);
-	}
+	@Autowired
+	ScriptExecutionRepository repository;
 
 	@RequestMapping(value = "/rest/databases", method = RequestMethod.GET, consumes = {
 			"application/json", }, produces = { "application/json" })
@@ -54,21 +49,22 @@ public class IndexController {
 
 	@RequestMapping(value = "/rest/execute-sql", method = RequestMethod.POST, consumes = {
 			"application/json" }, produces = { "application/json" })
-	public List<ExecuteSqlResponse> executeSql(@RequestBody ExecuteSqlRequest sql) {
-		List<ExecuteSqlResponse> responses = new ArrayList<>();
+	public ExecuteSqlResponse executeSql(@RequestBody ExecuteSqlRequest sql) {
+		ScriptExecutionRecord executionRecord = new ScriptExecutionRecord();
 		for (String databaseId : sql.getDatabases()) {
-			ExecuteSqlResponse response = new ExecuteSqlResponse();
-			response.setDatabaseId(databaseId);
-			try {
-				sqlExecuteService.executeSql(sql.getSql(), databaseId);
-				System.out.println(sql.getSql());
-				response.setSuccess(true);
-			} catch (Exception exp) {
-				response.setSuccess(false);
-				response.setMessage(exp.getMessage());
-			}
-			responses.add(response);
+			List<ScriptExecutionItemRecord> results = sqlExecuteService.executeSql(sql.getSql(), databaseId, true,
+					true);
+			executionRecord.setExecutedBy(1L);
+			executionRecord.setExecutedOn(new Date());
+			executionRecord.getItems().addAll(results);
 		}
-		return responses;
+		repository.save(executionRecord);
+		return new ExecuteSqlResponse(executionRecord.getId());
+	}
+
+	@RequestMapping(value = "/rest/execution/", method = RequestMethod.GET, produces = { "application/json" })
+	public List<ScriptExecutionItemRecord> getExecutionItemById(@RequestParam(value = "id", required = true) Long id) {
+		ScriptExecutionRecord record = repository.findOne(id);
+		return record.getItems();
 	}
 }
